@@ -2,14 +2,38 @@ import random
 from datacenter.models import Mark, Chastisement, Lesson, Schoolkid
 
 
-def fix_marks(schoolkid_name):
+COMMENDATION_TEXTS = [
+    "Молодец!",
+    "Отлично!",
+    "Хорошо!",
+    "Гораздо лучше, чем я ожидал!",
+    "Ты меня приятно удивил!",
+    "Великолепно!",
+    "Прекрасно!",
+    "Ты меня очень обрадовал!",
+    "Именно этого я давно ждал от тебя!",
+    "Сказано здорово – просто и ясно!",
+    "Ты, как всегда, точен!",
+    "Очень хороший ответ!",
+    "Талантливо!",
+    "Ты сегодня прыгнул выше головы!",
+    "Я поражен!"
+]
+
+
+def get_schoolkid(schoolkid_name):
     try:
-        schoolkid = Schoolkid.objects.get(full_name__contains=schoolkid_name)
+        return Schoolkid.objects.get(full_name__contains=schoolkid_name)
     except Schoolkid.DoesNotExist:
         print(f"Ученик с именем '{schoolkid_name}' не найден.")
-        return
     except Schoolkid.MultipleObjectsReturned:
         print(f"Найдено несколько учеников с именем '{schoolkid_name}'. Уточните запрос.")
+    return None
+
+
+def fix_marks(schoolkid_name):
+    schoolkid = get_schoolkid(schoolkid_name)
+    if not schoolkid:
         return
 
     marks_to_update = Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3])
@@ -22,13 +46,8 @@ def fix_marks(schoolkid_name):
 
 
 def remove_chastisements(schoolkid_name):
-    try:
-        schoolkid = Schoolkid.objects.get(full_name__contains=schoolkid_name)
-    except Schoolkid.DoesNotExist:
-        print(f"Ученик с именем '{schoolkid_name}' не найден.")
-        return
-    except Schoolkid.MultipleObjectsReturned:
-        print(f"Найдено несколько учеников с именем '{schoolkid_name}'. Уточните запрос.")
+    schoolkid = get_schoolkid(schoolkid_name)
+    if not schoolkid:
         return
 
     chastisements = Chastisement.objects.filter(schoolkid=schoolkid)
@@ -39,34 +58,11 @@ def remove_chastisements(schoolkid_name):
 
 
 def create_commendation(schoolkid_name, subject_title):
-    try:
-        schoolkid = Schoolkid.objects.get(full_name__contains=schoolkid_name)
-    except Schoolkid.DoesNotExist:
-        print(f"Ученик с именем '{schoolkid_name}' не найден.")
-        return
-    except Schoolkid.MultipleObjectsReturned:
-        print(f"Найдено несколько учеников с именем '{schoolkid_name}'. Уточните запрос.")
+    schoolkid = get_schoolkid(schoolkid_name)
+    if not schoolkid:
         return
 
-    commendation_texts = [
-        "Молодец!",
-        "Отлично!",
-        "Хорошо!",
-        "Гораздо лучше, чем я ожидал!",
-        "Ты меня приятно удивил!",
-        "Великолепно!",
-        "Прекрасно!",
-        "Ты меня очень обрадовал!",
-        "Именно этого я давно ждал от тебя!",
-        "Сказано здорово – просто и ясно!",
-        "Ты, как всегда, точен!",
-        "Очень хороший ответ!",
-        "Талантливо!",
-        "Ты сегодня прыгнул выше головы!",
-        "Я поражен!"
-    ]
-
-    commendation_text = random.choice(commendation_texts)
+    commendation_text = random.choice(COMMENDATION_TEXTS)
 
     last_lesson = Lesson.objects.filter(
         subject__title=subject_title,
